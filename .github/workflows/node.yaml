@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "Node-JS-3tier/**"
   workflow_dispatch:
 permissions:
   contents: write
