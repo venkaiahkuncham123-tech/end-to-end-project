@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.test
+          file: Node-JS-3tier/Dockerfile.test
           push: true
           tags: venkaiahk/node-three-tier:v1
 
