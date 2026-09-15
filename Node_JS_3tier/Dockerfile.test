@@ -1,0 +1,32 @@
+# Stage 1: Build client
+FROM node:20 AS client-build
+WORKDIR /usr/app/client
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ .
+RUN npm run build
+
+# Stage 2: Build server
+FROM node:20 AS server-build
+WORKDIR /usr/app/server
+COPY server/package*.json ./
+RUN npm ci --only=production
+COPY server/ .
+
+# Stage 3: Runtime
+FROM node:20-alpine
+WORKDIR /usr/run
+
+# Copy server runtime
+COPY --from=server-build /usr/app/server .
+
+# Copy built client into server's public folder
+COPY --from=client-build /usr/app/client/dist ./public
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && chown -R appuser:appgroup /usr/run
+USER appuser
+
+EXPOSE 3000
+CMD ["npm", "start"]
