@@ -61,5 +61,5 @@ jobs:
 
       - name: Deploy resources
         run: |
-          kubectl apply -f deploy.yaml -n test
+          kubectl apply -f ./Node_JS_3tier/deploy.yaml -n test
           
