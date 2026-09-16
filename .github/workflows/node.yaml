@@ -28,7 +28,7 @@ jobs:
           context: .
           file: Node_JS_3tier/Dockerfile.test
           push: true
-          tags: venkaiahk/node-three-tier:v2
+          tags: venkaiahk/node-three-tier:v3
 
   kubernets_integration:
     runs-on: self-hosted
