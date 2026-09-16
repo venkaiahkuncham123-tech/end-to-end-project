@@ -1,13 +1,16 @@
 name: node_Build_Deploy
 on:
   workflow_dispatch:
+  push:
+    branches: 
+      - main
 permissions:
   contents: write
   packages: write
   id-token: write
 jobs:
   docker_build_push:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: git-checkout
         uses: actions/checkout@v4
@@ -27,14 +30,12 @@ jobs:
           context: .
           file: Node_JS_3tier/Dockerfile.test
           push: true
-          tags: venkaiahk/node-three-tier:v1
+          tags: venkaiahk/node-three-tier:v2
 
   kubernets_integration:
     runs-on: self-hosted
     needs: docker_build_push
     steps:
-      - name: git-checkout
-        uses: actions/checkout@v4
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube
