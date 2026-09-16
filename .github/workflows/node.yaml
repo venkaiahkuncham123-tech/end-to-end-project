@@ -1,0 +1,74 @@
+name: node_Build_Deploy
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+jobs:
+  docker_build_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v4
+      - name: build-app
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Node-JS-3tier/Dockerfile.test
+          push: true
+          tags: venkaiahk/node-three-tier:v1
+
+  kubernets_integration:
+    runs-on: ubuntu-latest
+    needs: docker_build_push
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v4
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          cat <<EOF > $HOME/.kube/config
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - cluster:
+              certificate-authority-data: ${{ secrets.KUBE_CA_CERT }}
+              server: ${{ secrets.KUBE_API_SERVER }}
+            name: aws-kubeadm-cluster
+          contexts:
+          - context:
+              cluster: aws-kubeadm-cluster
+              namespace: test
+              user: ci-deployer
+            name: aws-kubeadm-context
+          current-context: aws-kubeadm-context
+          users:
+          - name: ci-deployer
+            user:
+              token: ${{ secrets.KUBE_TOKEN }}
+          EOF
+
+      - name: Deploy resources
+        run: |
+          kubectl apply -f deploy.yaml -n test
+          
