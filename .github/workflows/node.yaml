@@ -30,17 +30,11 @@ jobs:
           tags: venkaiahk/node-three-tier:v1
 
   kubernets_integration:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: docker_build_push
     steps:
       - name: git-checkout
         uses: actions/checkout@v4
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube
