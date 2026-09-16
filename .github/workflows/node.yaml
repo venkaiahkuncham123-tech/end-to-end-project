@@ -1,9 +1,7 @@
 name: node_Build_Deploy
 on:
   workflow_dispatch:
-  push:
-    branches: 
-      - main
+  
 permissions:
   contents: write
   packages: write
@@ -62,5 +60,9 @@ jobs:
 
       - name: Deploy resources
         run: |
-          kubectl apply -f ./Node_JS_3tier/deploy.yaml -n test
+          kubectl get svc -n test
+          kubectl get pods -n test
+          kubectl get deploy -n test
+          kubectl get cm -n test
+          kubectl get statefulset -n test
           
